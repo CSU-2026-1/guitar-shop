@@ -1,0 +1,20 @@
+{
+  "username": "performance_tester",
+  "items": [
+    {
+      "product_id": 101,
+      "sku": "FND-STR-01",
+      "title": "Fender Stratocaster",
+      "brand": "Fender",
+      "price": 1200.0,
+      "quantity": 1,
+      "type": "электрогитара",
+      "body_wood": "Alder",
+      "neck_wood": "Maple",
+      "fretboard_wood": "Rosewood",
+      "fret_count": 22,
+      "scale_length": 25.5,
+      "pickup_config": "SSS"
+    }
+  ]
+}

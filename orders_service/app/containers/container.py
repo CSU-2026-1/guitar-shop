@@ -22,14 +22,9 @@ class Container(containers.DeclarativeContainer):
         db_url = config.provided.db_url
     )
 
-    session = providers.Factory(
-        create_session,
-        db=db,
-    )
-
     orders_repo = providers.Factory(
         OrdersRepository,
-        session=session,
+        session_factory=db.provided.get_session_factory.call(),
     )
 
     kafka_client = providers.Singleton(
