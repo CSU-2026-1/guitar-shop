@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package products;
+
+service ProductService {
+    rpc GetProduct (GetProductRequest) returns (GetProductResponse);
+}
+
+message GetProductRequest {
+    int32 product_id = 1;
+}
+
+message GetProductResponse {
+    bool exists = 1;
+    int32 id = 2;
+    string sku = 3;
+    string title = 4;
+    string brand = 5;
+    double price = 6;
+    string type = 7;
+    string body_wood = 8;
+    string neck_wood = 9;
+    string fretboard_wood = 10;
+    int32 fret_count = 11;
+    double scale_length = 12;
+    string pickup_config = 13;
+    string image_url = 14;
+}

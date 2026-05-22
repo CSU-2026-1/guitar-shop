@@ -115,11 +115,14 @@ services:
       - DB_NAME=${DB_NAME:-guitar_shop_db}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - PYTHONPATH=/app
     depends_on:
       postgres-primary:
         condition: service_healthy
       redis:
         condition: service_started
+    expose:
+      - "50051"
 
   nginx:
     image: nginx:latest
