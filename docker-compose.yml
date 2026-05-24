@@ -124,6 +124,23 @@ services:
     expose:
       - "50051"
 
+  auth_service:
+    build:
+      context: .
+      dockerfile: auth_service/Dockerfile
+    container_name: auth_service
+    ports:
+      - "8003:8000"
+    working_dir: /app/auth_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    env_file:
+      - ./.env
+    environment:
+      - PYTHONPATH=/app
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+        
   nginx:
     image: nginx:latest
     volumes:
