@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "postgres"
 
-    JWT_SECRET_KEY: str = "SUPER_SECRET_KEY"
+    jwt_secret_key: str = "SECRETNYI_KOD(T)"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 

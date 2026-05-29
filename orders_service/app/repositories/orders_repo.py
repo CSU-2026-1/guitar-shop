@@ -1,14 +1,16 @@
 from typing import Sequence
-from sqlalchemy import delete, select
+
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from orders_service.app.schemas.order_items_schema import OrderItem
-from orders_service.app.schemas.orders_schemas import OrderCreate, OrderUpdate
-from orders_service.infra.database.models import OrderItemORM, OrderORM
+from orders_service.app.schemas.orders_schemas import OrderCreate
+from orders_service.app.schemas.orders_schemas import OrderUpdate
+from orders_service.infra.database.models import OrderItemORM
+from orders_service.infra.database.models import OrderORM
 
 
 class OrdersRepository:
-
     def __init__(self, session_factory) -> None:
         self.session_factory = session_factory
 
@@ -32,7 +34,7 @@ class OrdersRepository:
                         fret_count=item.fret_count,
                         scale_length=item.scale_length,
                         pickup_config=item.pickup_config,
-                        image_url=item.image_url
+                        image_url=item.image_url,
                     )
                 )
 
@@ -41,22 +43,31 @@ class OrdersRepository:
             await session.refresh(new_order)
             return new_order.id
 
-    async def delete_order(self, order_id: int) -> bool:
+    async def delete_order(self, order_id: int, username: str | None = None) -> bool:
         async with self.session_factory() as session:
             query = select(OrderORM).where(OrderORM.id == order_id)
+            if username is not None:
+                query = query.where(OrderORM.username == username)
+
             result = await session.execute(query)
             order = result.scalar_one_or_none()
+
             if order:
                 await session.delete(order)
                 await session.commit()
                 return True
+
             return False
 
-    async def update_order(self, order_id: int, payload: OrderUpdate):
+    async def update_order(self, order_id: int, payload: OrderUpdate, username: str | None = None):
         async with self.session_factory() as session:
             query = select(OrderORM).where(OrderORM.id == order_id).options(selectinload(OrderORM.items))
+            if username is not None:
+                query = query.where(OrderORM.username == username)
+
             result = await session.execute(query)
             order = result.scalar_one_or_none()
+
             if not order:
                 return None
 
@@ -67,20 +78,33 @@ class OrdersRepository:
             await session.refresh(order)
             return order
 
-    async def get_order(self, order_id: int) -> OrderORM | None:
+    async def get_order(self, order_id: int, username: str | None = None) -> OrderORM | None:
         async with self.session_factory() as session:
             query = select(OrderORM).where(OrderORM.id == order_id).options(selectinload(OrderORM.items))
+            if username is not None:
+                query = query.where(OrderORM.username == username)
+
             result = await session.execute(query)
             return result.scalar_one_or_none()
 
-    async def get_orders(self) -> Sequence[OrderORM]:
+    async def get_orders(self, username: str | None = None) -> Sequence[OrderORM]:
         async with self.session_factory() as session:
             query = select(OrderORM).options(selectinload(OrderORM.items))
+            if username is not None:
+                query = query.where(OrderORM.username == username)
+
             result = await session.execute(query)
             return result.scalars().all()
 
-    async def add_item_to_order(self, item_data: OrderItem, order_id: int) -> int:
+    async def add_item_to_order(self, item_data: OrderItem, order_id: int, username: str | None = None) -> int:
         async with self.session_factory() as session:
+            if username is not None:
+                query = select(OrderORM).where(OrderORM.id == order_id, OrderORM.username == username)
+                result = await session.execute(query)
+                order = result.scalar_one_or_none()
+                if order is None:
+                    return 0
+
             new_item = OrderItemORM(
                 order_id=order_id,
                 product_id=item_data.product_id,
@@ -96,16 +120,19 @@ class OrdersRepository:
                 fret_count=item_data.fret_count,
                 scale_length=item_data.scale_length,
                 pickup_config=item_data.pickup_config,
-                image_url=item_data.image_url
+                image_url=item_data.image_url,
             )
             session.add(new_item)
             await session.commit()
             await session.refresh(new_item)
             return new_item.id
 
-    async def remove_order_item(self, item_id: int) -> bool:
+    async def remove_order_item(self, item_id: int, username: str | None = None) -> bool:
         async with self.session_factory() as session:
             query = select(OrderItemORM).where(OrderItemORM.id == item_id)
+            if username is not None:
+                query = query.join(OrderORM).where(OrderORM.username == username)
+
             result = await session.execute(query)
             item = result.scalar_one_or_none()
 
@@ -113,4 +140,5 @@ class OrdersRepository:
                 await session.delete(item)
                 await session.commit()
                 return True
+
             return False

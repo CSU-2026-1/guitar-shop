@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     db_host: str = "localhost"
     db_port: int = 5432
     db_name: str = "product_db"
-
+    jwt_secret_key: str = "SECRETNYI_KOD(T)"
+    jwt_algorithm: str = "HS256"
     #Redis
     redis_host: str = "localhost"
     redis_port: int = 6379

@@ -91,13 +91,15 @@ services:
       - DB_HOST=postgres-primary
       - DB_NAME=${DB_NAME:-guitar_shop_db}
       - KAFKA_BOOTSTRAP_SERVERS=redpanda:29092
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-SUPER_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
     depends_on:
       redpanda:
         condition: service_started
       postgres-primary:
         condition: service_healthy
     deploy:
-      replicas: 2 # СРАЗУ 2 КОПИИ сервиса заказов для балансировки
+      replicas: 2
 
   products_service:
     restart: always
@@ -116,6 +118,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - PYTHONPATH=/app
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-SUPER_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
     depends_on:
       postgres-primary:
         condition: service_healthy
@@ -150,6 +154,7 @@ services:
     depends_on:
       - orders_service
       - products_service
+      - auth_service
 
   prometheus:
     image: prom/prometheus:latest
@@ -160,6 +165,7 @@ services:
     depends_on:
       - orders_service
       - products_service
+      - auth_service
 
   loki:
     image: grafana/loki:2.9.0

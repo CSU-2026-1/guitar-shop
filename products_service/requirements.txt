@@ -10,3 +10,4 @@ celery>=5.3.6
 prometheus-fastapi-instrumentator>=7.0.0
 grpcio
 grpcio-tools
+python-jose[cryptography]

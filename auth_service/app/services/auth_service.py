@@ -1,10 +1,11 @@
 from fastapi import HTTPException
 from fastapi import status
+from sqlalchemy.exc import IntegrityError
 
-from app.models.user import User
+from app.core.jwt import create_access_token
 from app.core.security import hash_password
 from app.core.security import verify_password
-from app.core.jwt import create_access_token
+from app.models.user import User
 
 
 class AuthService:
@@ -17,12 +18,20 @@ class AuthService:
         username: str,
         password: str,
     ):
-        existing_user = await self.repository.get_by_email(email)
+        existing_email = await self.repository.get_by_email(email)
 
-        if existing_user:
+        if existing_email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="User already exists",
+                detail="Email already exists",
+            )
+
+        existing_username = await self.repository.get_by_username(username)
+
+        if existing_username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already exists",
             )
 
         user = User(
@@ -31,7 +40,14 @@ class AuthService:
             hashed_password=hash_password(password),
         )
 
-        return await self.repository.create(user)
+        try:
+            return await self.repository.create(user)
+        except IntegrityError:
+            await self.repository.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User already exists",
+            )
 
     async def login(
         self,
@@ -56,6 +72,9 @@ class AuthService:
             {
                 "sub": str(user.id),
                 "email": user.email,
+                "username": user.username,
+                "is_admin": user.is_admin,
+                "role": "admin" if user.is_admin else "user",
             }
         )
 

@@ -6,7 +6,8 @@ class Settings(BaseSettings):
     db_host: str = "localhost"
     db_port: int = 5432
     db_name: str = "orders_db"
-
+    jwt_secret_key: str = "SECRETNYI_KOD(T)"
+    jwt_algorithm: str = "HS256"
     kafka_bootstrap_servers: str = "localhost:9092"
 
     @property
