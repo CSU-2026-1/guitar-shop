@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer
 from jose import JWTError
 from jose import jwt
 
-from config import settings
+from orders_service.config import settings
 
 security = HTTPBearer()
 
