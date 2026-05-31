@@ -26,8 +26,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Orders Service", 
     lifespan=lifespan ,
-    docs_url="/api/orders/docs",
-    openapi_url="/api/orders/openapi.json"
+    docs_url="/api/v1/orders/docs",
+    openapi_url="/api/v1/orders/openapi.json"
     )
 
 Instrumentator().instrument(app).expose(app)
