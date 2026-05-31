@@ -12,8 +12,8 @@ container.wire(modules=["orders_service.app.api.orders_routes"])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db = container.db()
-    async with db._engine.begin() as conn:
+    db_master = container.db_write()
+    async with db_master._engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     kafka_client = container.kafka_client()

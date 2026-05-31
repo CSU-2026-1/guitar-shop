@@ -10,21 +10,28 @@ from orders_service.config import settings
 from orders_service.infra.database.db_config import Database
 from orders_service.infra.kafka.producers.order_created_producer import OrderCreatedProducer
 
-def create_session(db: Database):
-    return db.get_session_factory()()
-
 class Container(containers.DeclarativeContainer):
 
     config = providers.Object(settings)
 
-    db = providers.Singleton(
+    db_write = providers.Singleton(
         Database,
         db_url = config.provided.db_url
     )
 
-    orders_repo = providers.Factory(
+    db_read = providers.Singleton(
+        Database,
+        db_url = config.provided.db_replica_url
+    )
+
+    orders_repo_write = providers.Factory(
         OrdersRepository,
-        session_factory=db.provided.get_session_factory.call(),
+        session_factory=db_write.provided.get_session_factory.call(),
+    )
+
+    orders_repo_read = providers.Factory(
+        OrdersRepository,
+        session_factory=db_read.provided.get_session_factory.call(),
     )
 
     kafka_client = providers.Singleton(
@@ -37,28 +44,29 @@ class Container(containers.DeclarativeContainer):
         kafka_client,
     )
 
+
     create_order_use_case = providers.Factory(
         CreateOrderUseCase,
-        repo=orders_repo,
+        repo=orders_repo_write,
         producer=order_created_producer,
     )
 
     get_order_use_case = providers.Factory(
         GetOrderUseCase,
-        repo=orders_repo,
+        repo=orders_repo_read,
     )
 
     get_orders_use_case = providers.Factory(
         GetOrdersUseCase,
-        repo=orders_repo,
+        repo=orders_repo_read,
     )
 
     delete_order_use_case = providers.Factory(
         DeleteOrderUseCase,
-        repo=orders_repo,
+        repo=orders_repo_write,
     )
 
     update_order_use_case = providers.Factory(
         UpdateOrderUseCase,
-        repo=orders_repo,
+        repo=orders_repo_write,
     )

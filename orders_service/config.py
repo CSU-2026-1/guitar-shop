@@ -15,6 +15,10 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
     @property
+    def db_replica_url(self) -> str:
+        return f"postgresql+asyncpg://{self.db_user}:{self.db_password}@postgres-replica:5432/{self.db_name}"
+
+    @property
     def bootstrap_servers(self) -> str:
         return self.kafka_bootstrap_servers
 
