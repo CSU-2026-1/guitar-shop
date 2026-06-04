@@ -6,12 +6,17 @@ from orders_service.app.containers.container import Container
 from orders_service.app.api.orders_routes import router as orders_router
 from orders_service.infra.database.db_config import Base
 from prometheus_fastapi_instrumentator import Instrumentator
+from infrastructure.consul import ConsulConfig
 
 container = Container()
 container.wire(modules=["orders_service.app.api.orders_routes"])
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Регистрация в Consul
+    consul_reg = ConsulConfig(service_name="orders-service", service_port=8002)
+    consul_reg.register()
+
     db_master = container.db_write()
     async with db_master._engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -22,6 +27,7 @@ async def lifespan(app: FastAPI):
     yield
 
     await kafka_client.stop()
+    consul_reg.deregister()
 
 app = FastAPI(
     title="Orders Service", 
@@ -31,6 +37,10 @@ app = FastAPI(
     )
 
 Instrumentator().instrument(app).expose(app)
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "orders"}
 
 app.include_router(orders_router, prefix="/api")
 

@@ -11,3 +11,5 @@ prometheus-fastapi-instrumentator>=7.0.0
 grpcio
 grpcio-tools
 python-jose[cryptography]
+python-consul2
+

@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY broker/ ./broker/
 COPY event_contracts ./event_contracts/
+COPY infrastructure ./infrastructure/
 COPY notifications_service ./notifications_service/
 
 ENV PYTHONPATH=/app
