@@ -11,3 +11,4 @@ prometheus-fastapi-instrumentator>=7.0.0
 grpcio
 grpcio-tools
 python-jose[cryptography]
+openai>=1.12.0

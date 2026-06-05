@@ -18,6 +18,8 @@ from app.use_cases.product import GetProductUseCase
 from app.use_cases.product import GetRecommendationsUseCase
 from app.use_cases.product import TriggerRecommendationUpdateUseCase
 from app.use_cases.product import UpdateProductUseCase
+from app.schemas.product_DTOs import ChatRequest, ChatResponse
+from app.use_cases.ai_assistant import AiAssistantUseCase
 
 router = APIRouter(prefix="/api/v1/guitars", tags=["Guitars"])
 
@@ -38,6 +40,17 @@ async def trigger_recommendations(
     use_case: TriggerRecommendationUpdateUseCase = Depends(Provide[Container.trigger_recs_use_case]),
 ):
     return await use_case.execute()
+
+@router.post("/assistant", response_model=ChatResponse)
+@inject
+async def ask_ai_assistant(
+    request: ChatRequest,
+    use_case: AiAssistantUseCase = Depends(Provide[Container.ai_assistant_use_case])
+):
+    try:
+        return await use_case.execute(request.message)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка AI: {str(e)}")
 
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)

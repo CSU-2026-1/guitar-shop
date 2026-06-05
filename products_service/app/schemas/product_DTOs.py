@@ -37,3 +37,9 @@ class ProductResponse(ProductBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+class ChatRequest(BaseModel):
+    message: str = Field(..., description="Сообщение от пользователя")
+
+class ChatResponse(BaseModel):
+    reply: str = Field(..., description="Ответ ИИ-ассистента")

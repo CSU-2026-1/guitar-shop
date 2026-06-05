@@ -3,6 +3,7 @@ from app.infra.db import AsyncSessionLocal
 from app.infra.redis import get_redis_client, get_recs_redis_client
 from app.repositories.product_repo import ProductRepository
 from app.use_cases.product import GetProductUseCase, UpdateProductUseCase, DeleteProductUseCase, GetRecommendationsUseCase, TriggerRecommendationUpdateUseCase
+from app.use_cases.ai_assistant import AiAssistantUseCase
 
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(modules=["app.api.product_router"])
@@ -37,4 +38,9 @@ class Container(containers.DeclarativeContainer):
 
     delete_product_use_case = providers.Factory(
         DeleteProductUseCase, product_repo=product_repo, redis_client=redis_client
+    )
+
+    ai_assistant_use_case = providers.Factory(
+        AiAssistantUseCase,
+        product_repo=product_repo
     )
