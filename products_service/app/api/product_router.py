@@ -1,25 +1,24 @@
 from typing import List
-
 from dependency_injector.wiring import Provide
 from dependency_injector.wiring import inject
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi import status
-
 from app.containers.gateway import Container
 from app.core.security import require_admin
 from app.repositories.product_repo import ProductRepository
 from app.schemas.product_DTOs import ProductCreate
 from app.schemas.product_DTOs import ProductResponse
 from app.schemas.product_DTOs import ProductUpdate
+from app.schemas.product_DTOs import ChatRequest, ChatResponse, ChatHistoryResponse
 from app.use_cases.product import DeleteProductUseCase
 from app.use_cases.product import GetProductUseCase
 from app.use_cases.product import GetRecommendationsUseCase
 from app.use_cases.product import TriggerRecommendationUpdateUseCase
 from app.use_cases.product import UpdateProductUseCase
-from app.schemas.product_DTOs import ChatRequest, ChatResponse
 from app.use_cases.ai_assistant import AiAssistantUseCase
+from redis.asyncio import Redis
 
 router = APIRouter(prefix="/api/v1/guitars", tags=["Guitars"])
 
@@ -41,6 +40,7 @@ async def trigger_recommendations(
 ):
     return await use_case.execute()
 
+
 @router.post("/assistant", response_model=ChatResponse)
 @inject
 async def ask_ai_assistant(
@@ -48,10 +48,55 @@ async def ask_ai_assistant(
     use_case: AiAssistantUseCase = Depends(Provide[Container.ai_assistant_use_case])
 ):
     try:
-        return await use_case.execute(request.message)
+        return await use_case.execute(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка AI: {str(e)}")
 
+
+@router.get("/assistant/history/{session_id}", response_model=ChatHistoryResponse)
+@inject
+async def get_chat_history(
+    session_id: str,
+    use_case: AiAssistantUseCase = Depends(Provide[Container.ai_assistant_use_case])
+):
+    """Получить историю диалога по session_id"""
+    try:
+        history = await use_case._get_history(session_id, limit=50)
+        return ChatHistoryResponse(
+            session_id=session_id,
+            messages=history,
+            total=len(history)
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")
+
+
+@router.delete("/assistant/history/{session_id}")
+@inject
+async def clear_chat_history(
+    session_id: str,
+    use_case: AiAssistantUseCase = Depends(Provide[Container.ai_assistant_use_case])
+):
+    """Очистить историю диалога"""
+    try:
+        success = await use_case.clear_history(session_id)
+        if success:
+            return {"status": "cleared", "session_id": session_id}
+        raise HTTPException(status_code=404, detail="История не найдена")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка: {str(e)}")
+
+
+@router.post("/assistant/new-session")
+async def create_new_session():
+    """Создать новую пустую сессию (возвращает session_id)"""
+    import hashlib
+    import time
+    session_id = hashlib.md5(f"session:{time.time_ns()}".encode()).hexdigest()[:16]
+    return {"session_id": session_id, "status": "created"}
+
+
+# === CRUD операции (остаются без изменений) ===
 
 @router.post("/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
 @inject

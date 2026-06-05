@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎸 Guitar Shop</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <nav class="navbar">
+        <div class="logo">🎸 Guitar Shop</div>
+        <ul class="nav-links">
+          <li>
+            <a href="#" data-view="catalog" class="nav-link active">Каталог</a>
+          </li>
+          <li>
+            <a href="#" data-view="orders" class="nav-link">Мои заказы</a>
+          </li>
+          <li class="cart-icon" id="cart-btn">
+            🛒 <span id="cart-count">0</span>
+          </li>
+          <li id="auth-links">
+            <a href="#" data-view="login" class="nav-link">Вход</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="app">
+      <section id="catalog-view">
+        <h1>Каталог гитар</h1>
+        <div class="filters">
+          <select id="type-filter">
+            <option value="">Все типы</option>
+            <option value="электрогитара">Электрогитары</option>
+            <option value="акустическая гитара">Акустические</option>
+            <option value="классическая гитара">Классические</option>
+            <option value="бас гитара">Бас-гитары</option>
+          </select>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Поиск по названию..."
+          />
+        </div>
+        <div id="products-grid" class="products-grid"></div>
+      </section>
+    </main>
+
+    <!-- Модальное окно товара -->
+    <div id="product-modal" class="modal hidden">
+      <div class="modal-content large">
+        <span class="close-btn" data-modal="product-modal">&times;</span>
+        <div id="product-detail"></div>
+      </div>
+    </div>
+
+    <!-- Модальное окно входа -->
+    <div id="login-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-btn" data-modal="login-modal">&times;</span>
+        <h2>Вход</h2>
+        <form id="login-form">
+          <input type="email" name="email" placeholder="Email" required />
+          <input
+            type="password"
+            name="password"
+            placeholder="Пароль"
+            required
+          />
+          <button type="submit">Войти</button>
+          <p class="switch-form">
+            Нет аккаунта?
+            <a href="#" data-modal-target="register-modal">Зарегистрируйтесь</a>
+          </p>
+        </form>
+        <div id="login-error" class="error"></div>
+      </div>
+    </div>
+
+    <!-- Модальное окно регистрации -->
+    <div id="register-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-btn" data-modal="register-modal">&times;</span>
+        <h2>Регистрация</h2>
+        <form id="register-form">
+          <input type="email" name="email" placeholder="Email" required />
+          <input
+            type="text"
+            name="username"
+            placeholder="Имя пользователя"
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Пароль"
+            required
+          />
+          <button type="submit">Зарегистрироваться</button>
+          <p class="switch-form">
+            Уже есть аккаунт?
+            <a href="#" data-modal-target="login-modal">Войти</a>
+          </p>
+        </form>
+        <div id="register-error" class="error"></div>
+      </div>
+    </div>
+
+    <!-- Модальное окно корзины -->
+    <div id="cart-modal" class="modal hidden">
+      <div class="modal-content large">
+        <span class="close-btn" data-modal="cart-modal">&times;</span>
+        <h2>🛒 Корзина</h2>
+        <div id="cart-items"></div>
+        <div id="cart-total"></div>
+        <button id="checkout-btn" class="primary-btn">Оформить заказ</button>
+      </div>
+    </div>
+
+    <!-- Модальное окно заказов -->
+    <div id="orders-modal" class="modal hidden">
+      <div class="modal-content large">
+        <span class="close-btn" data-modal="orders-modal">&times;</span>
+        <h2>📦 Мои заказы</h2>
+        <div id="orders-list"></div>
+      </div>
+    </div>
+
+    <!-- Чат-бот виджет -->
+    <div id="chat-widget">
+      <button id="chat-toggle" title="AI-Консультант">💬</button>
+      <div id="chat-window" class="hidden">
+        <div class="chat-header">
+          <span>🤖 AI-Консультант</span>
+          <button id="chat-close">&times;</button>
+        </div>
+        <div id="chat-messages">
+          <div class="message bot">
+            Привет! Я AI-консультант Guitar Shop. Помогу подобрать идеальную
+            гитару! 🎸
+          </div>
+        </div>
+        <form id="chat-form">
+          <input
+            type="text"
+            id="chat-input"
+            placeholder="Спросите о гитарах..."
+            autocomplete="off"
+          />
+          <button type="submit">➤</button>
+        </form>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2026 Guitar Shop. Все права защищены.</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
