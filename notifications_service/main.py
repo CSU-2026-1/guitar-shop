@@ -6,12 +6,17 @@ import os
 from fastapi import FastAPI
 from notifications_service.containers import container
 from notifications_service.containers.container import Container
+from infrastructure.consul import ConsulConfig
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Регистрация в Consul
+    consul_reg = ConsulConfig(service_name="notifications-service", service_port=8001)
+    consul_reg.register()
+
     container = Container()
     container.config.kafka_bootstrap_servers.from_value(
         os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
@@ -30,6 +35,7 @@ async def lifespan(app: FastAPI):
         await kafka_task
     except asyncio.CancelledError:
         logger.info("Kafka Consumer task cancelled.")
+    consul_reg.deregister()
 
 
 app = FastAPI(lifespan=lifespan)

@@ -14,3 +14,5 @@ email-validator
 prometheus-fastapi-instrumentator
 grpcio
 grpcio-tools
+python-consul2
+
